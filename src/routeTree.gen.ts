@@ -18,6 +18,7 @@ import { Route as RedirectImport } from './routes/redirect'
 import { Route as LiveFeedImport } from './routes/live-feed'
 import { Route as LazyComponentImport } from './routes/lazy-component'
 import { Route as DealsImport } from './routes/deals'
+import { Route as DashboardImport } from './routes/dashboard'
 import { Route as AdminImport } from './routes/admin'
 import { Route as IndexImport } from './routes/index'
 import { Route as AdminIndexImport } from './routes/admin.index'
@@ -66,6 +67,12 @@ const LazyComponentRoute = LazyComponentImport.update({
 const DealsRoute = DealsImport.update({
   id: '/deals',
   path: '/deals',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DashboardRoute = DashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -121,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
     '/deals': {
@@ -234,6 +248,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/dashboard': typeof DashboardRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -249,6 +264,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -265,6 +281,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/dashboard': typeof DashboardRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -283,6 +300,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -297,6 +315,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -311,6 +330,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/dashboard'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -328,6 +348,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  DashboardRoute: typeof DashboardRoute
   DealsRoute: typeof DealsRoute
   LazyComponentRoute: typeof LazyComponentRoute
   LiveFeedRoute: typeof LiveFeedRoute
@@ -340,6 +361,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  DashboardRoute: DashboardRoute,
   DealsRoute: DealsRoute,
   LazyComponentRoute: LazyComponentRoute,
   LiveFeedRoute: LiveFeedRoute,
@@ -361,6 +383,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/admin",
+        "/dashboard",
         "/deals",
         "/lazy-component",
         "/live-feed",
@@ -379,6 +402,9 @@ export const routeTree = rootRoute
         "/admin/members",
         "/admin/"
       ]
+    },
+    "/dashboard": {
+      "filePath": "dashboard.tsx"
     },
     "/deals": {
       "filePath": "deals.tsx"
