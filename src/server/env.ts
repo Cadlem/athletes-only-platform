@@ -13,7 +13,7 @@ export const parseEnv = (runtimeEnv: RuntimeEnv) =>
       NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
       PORT: z.number().default(9999),
       LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
-      DB_FILE: z.string().startsWith('file:').default('file:db.sqlite'),
+      DATABASE_URL: z.string().min(1).default('postgresql://localhost:5432/athletes_only'),
 
       BETTER_AUTH_SECRET: z.string().min(3),
       GITHUB_ID: z.string().min(3),

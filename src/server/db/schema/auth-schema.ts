@@ -1,6 +1,6 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { pgTable, uuid, text, boolean, timestamp, integer } from 'drizzle-orm/pg-core'
 
-export const user = sqliteTable('user', {
+export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
@@ -10,7 +10,7 @@ export const user = sqliteTable('user', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const session = sqliteTable('session', {
+export const session = pgTable('session', {
   id: text('id').primaryKey(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
   token: text('token').notNull().unique(),
@@ -23,7 +23,7 @@ export const session = sqliteTable('session', {
     .references(() => user.id),
 })
 
-export const account = sqliteTable('account', {
+export const account = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
@@ -41,7 +41,7 @@ export const account = sqliteTable('account', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 
-export const verification = sqliteTable('verification', {
+export const verification = pgTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
@@ -50,7 +50,7 @@ export const verification = sqliteTable('verification', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
 })
 
-export const passkey = sqliteTable('passkey', {
+export const passkey = pgTable('passkey', {
   id: text('id').primaryKey(),
   name: text('name'),
   publicKey: text('public_key').notNull(),

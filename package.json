@@ -51,6 +51,7 @@
     "node": "link:@hono/vite-build/node",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
+    "postgres": "^3.4.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-scan": "^0.2.8",
