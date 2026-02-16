@@ -2,9 +2,11 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useSession, signOut } from '~/lib/better-auth/auth-client'
 import { sampleVideos } from '~/lib/videos'
+import { LoadingPage } from '~/components/ui/loading'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
+  pendingComponent: LoadingPage,
 })
 
 export function LandingPage() {

@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import { sampleVideos } from '~/lib/videos'
+import { LoadingSpinner, LoadingPage } from '~/components/ui/loading'
 
 export const Route = createFileRoute('/live-feed')({
   component: LiveFeedPage,
+  pendingComponent: LoadingPage,
 })
 
 export function LiveFeedPage() {

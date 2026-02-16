@@ -9,9 +9,11 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table'
+import { LoadingTable } from '~/components/ui/loading'
 
 export const Route = createFileRoute('/deals')({
   component: DealsPage,
+  pendingComponent: LoadingTable,
 })
 
 type Deal = {
