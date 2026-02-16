@@ -11,7 +11,7 @@ export const parseEnv = (runtimeEnv: RuntimeEnv) =>
      */
     server: {
       NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-      PORT: z.number().default(9999),
+      PORT: z.coerce.number().default(9999),
       LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
       DATABASE_URL: z.string().min(1).default('postgresql://localhost:5432/athletes_only'),
 

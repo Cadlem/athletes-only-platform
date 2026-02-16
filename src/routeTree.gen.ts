@@ -11,9 +11,13 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SignupImport } from './routes/signup'
 import { Route as SigninImport } from './routes/signin'
+import { Route as RostersImport } from './routes/rosters'
 import { Route as RedirectImport } from './routes/redirect'
+import { Route as LiveFeedImport } from './routes/live-feed'
 import { Route as LazyComponentImport } from './routes/lazy-component'
+import { Route as DealsImport } from './routes/deals'
 import { Route as AdminImport } from './routes/admin'
 import { Route as IndexImport } from './routes/index'
 import { Route as AdminIndexImport } from './routes/admin.index'
@@ -23,9 +27,21 @@ import { Route as AdminMembersMemberIdImport } from './routes/admin.members.$mem
 
 // Create/Update Routes
 
+const SignupRoute = SignupImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const SigninRoute = SigninImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RostersRoute = RostersImport.update({
+  id: '/rosters',
+  path: '/rosters',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -35,9 +51,21 @@ const RedirectRoute = RedirectImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const LiveFeedRoute = LiveFeedImport.update({
+  id: '/live-feed',
+  path: '/live-feed',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const LazyComponentRoute = LazyComponentImport.update({
   id: '/lazy-component',
   path: '/lazy-component',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DealsRoute = DealsImport.update({
+  id: '/deals',
+  path: '/deals',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -95,11 +123,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImport
       parentRoute: typeof rootRoute
     }
+    '/deals': {
+      id: '/deals'
+      path: '/deals'
+      fullPath: '/deals'
+      preLoaderRoute: typeof DealsImport
+      parentRoute: typeof rootRoute
+    }
     '/lazy-component': {
       id: '/lazy-component'
       path: '/lazy-component'
       fullPath: '/lazy-component'
       preLoaderRoute: typeof LazyComponentImport
+      parentRoute: typeof rootRoute
+    }
+    '/live-feed': {
+      id: '/live-feed'
+      path: '/live-feed'
+      fullPath: '/live-feed'
+      preLoaderRoute: typeof LiveFeedImport
       parentRoute: typeof rootRoute
     }
     '/redirect': {
@@ -109,11 +151,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RedirectImport
       parentRoute: typeof rootRoute
     }
+    '/rosters': {
+      id: '/rosters'
+      path: '/rosters'
+      fullPath: '/rosters'
+      preLoaderRoute: typeof RostersImport
+      parentRoute: typeof rootRoute
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof SigninImport
+      parentRoute: typeof rootRoute
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupImport
       parentRoute: typeof rootRoute
     }
     '/admin/members': {
@@ -178,9 +234,13 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
+  '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
+  '/rosters': typeof RostersRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/admin/members': typeof AdminMembersRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
@@ -189,9 +249,13 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
+  '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
+  '/rosters': typeof RostersRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/admin': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
   '/admin/members': typeof AdminMembersIndexRoute
@@ -201,9 +265,13 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
+  '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
+  '/rosters': typeof RostersRoute
   '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
   '/admin/members': typeof AdminMembersRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
@@ -215,9 +283,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/deals'
     | '/lazy-component'
+    | '/live-feed'
     | '/redirect'
+    | '/rosters'
     | '/signin'
+    | '/signup'
     | '/admin/members'
     | '/admin/'
     | '/admin/members/$memberId'
@@ -225,9 +297,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/deals'
     | '/lazy-component'
+    | '/live-feed'
     | '/redirect'
+    | '/rosters'
     | '/signin'
+    | '/signup'
     | '/admin'
     | '/admin/members/$memberId'
     | '/admin/members'
@@ -235,9 +311,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/deals'
     | '/lazy-component'
+    | '/live-feed'
     | '/redirect'
+    | '/rosters'
     | '/signin'
+    | '/signup'
     | '/admin/members'
     | '/admin/'
     | '/admin/members/$memberId'
@@ -248,17 +328,25 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  DealsRoute: typeof DealsRoute
   LazyComponentRoute: typeof LazyComponentRoute
+  LiveFeedRoute: typeof LiveFeedRoute
   RedirectRoute: typeof RedirectRoute
+  RostersRoute: typeof RostersRoute
   SigninRoute: typeof SigninRoute
+  SignupRoute: typeof SignupRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  DealsRoute: DealsRoute,
   LazyComponentRoute: LazyComponentRoute,
+  LiveFeedRoute: LiveFeedRoute,
   RedirectRoute: RedirectRoute,
+  RostersRoute: RostersRoute,
   SigninRoute: SigninRoute,
+  SignupRoute: SignupRoute,
 }
 
 export const routeTree = rootRoute
@@ -273,9 +361,13 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/admin",
+        "/deals",
         "/lazy-component",
+        "/live-feed",
         "/redirect",
-        "/signin"
+        "/rosters",
+        "/signin",
+        "/signup"
       ]
     },
     "/": {
@@ -288,14 +380,26 @@ export const routeTree = rootRoute
         "/admin/"
       ]
     },
+    "/deals": {
+      "filePath": "deals.tsx"
+    },
     "/lazy-component": {
       "filePath": "lazy-component.tsx"
+    },
+    "/live-feed": {
+      "filePath": "live-feed.tsx"
     },
     "/redirect": {
       "filePath": "redirect.tsx"
     },
+    "/rosters": {
+      "filePath": "rosters.tsx"
+    },
     "/signin": {
       "filePath": "signin.tsx"
+    },
+    "/signup": {
+      "filePath": "signup.tsx"
     },
     "/admin/members": {
       "filePath": "admin.members.tsx",
