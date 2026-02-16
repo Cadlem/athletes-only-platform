@@ -1,14 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { signIn } from '~/lib/better-auth/auth-client'
+import { signUp } from '~/lib/better-auth/auth-client'
 
-export const Route = createFileRoute('/signin')({
-  component: SigninPage,
+export const Route = createFileRoute('/signup')({
+  component: SignupPage,
 })
 
-export function SigninPage() {
+export function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [role, setRole] = useState<'fan' | 'athlete'>('fan')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -18,13 +20,15 @@ export function SigninPage() {
     setLoading(true)
 
     try {
-      const result = await signIn.email({
+      const result = await signUp.email({
         email,
         password,
+        name,
+        image: undefined,
       })
       
       if (result.error) {
-        setError(result.error.message || 'Sign in failed')
+        setError(result.error.message || 'Signup failed')
       } else {
         // Redirect to home on success
         window.location.href = '/'
@@ -36,13 +40,6 @@ export function SigninPage() {
     }
   }
 
-  const handleGithubSignIn = async () => {
-    await signIn.social({
-      provider: 'github',
-      callbackURL: '/',
-    })
-  }
-
   return (
     <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -50,11 +47,62 @@ export function SigninPage() {
           <Link to="/" className="text-3xl font-bold text-amber-400">
             Athletes Only
           </Link>
-          <p className="text-gray-400 mt-2">Welcome back</p>
+          <p className="text-gray-400 mt-2">Create your account</p>
         </div>
 
         <div className="bg-gray-900 rounded-xl border border-gray-800 p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Role Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">
+                I want to join as a:
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setRole('fan')}
+                  className={`p-4 rounded-lg border transition-all ${
+                    role === 'fan'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">👤</div>
+                  <div className="font-semibold">Fan</div>
+                  <div className="text-xs mt-1">Watch & support athletes</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole('athlete')}
+                  className={`p-4 rounded-lg border transition-all ${
+                    role === 'athlete'
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-gray-700 bg-gray-800 text-gray-400 hover:border-gray-600'
+                  }`}
+                >
+                  <div className="text-2xl mb-2">🏆</div>
+                  <div className="font-semibold">Athlete</div>
+                  <div className="text-xs mt-1">Share content & earn</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                Display Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                placeholder="Your name"
+              />
+            </div>
+
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
@@ -82,8 +130,9 @@ export function SigninPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-                placeholder="Your password"
+                placeholder="Min 8 characters"
               />
             </div>
 
@@ -100,35 +149,14 @@ export function SigninPage() {
               disabled={loading}
               className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-gray-900 font-semibold py-3 rounded-lg transition-colors"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-900 text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleGithubSignIn}
-              className="mt-4 w-full flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white font-medium py-3 rounded-lg transition-colors"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.87 1.52 2.34 1.07 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.92c0-1.11.38-2 1.03-2.71c-.1-.25-.45-1.29.1-2.64c0 0 .84-.27 2.75 1.02c.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.35.2 2.39.1 2.64c.65.71 1.03 1.6 1.03 2.71c0 3.82-2.34 4.66-4.57 4.91c.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/>
-              </svg>
-              Sign in with GitHub
-            </button>
-          </div>
-
           <div className="mt-6 text-center text-gray-400">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-amber-400 hover:text-amber-300">
-              Sign Up
+            Already have an account?{' '}
+            <Link to="/signin" className="text-amber-400 hover:text-amber-300">
+              Sign In
             </Link>
           </div>
         </div>

@@ -12,12 +12,12 @@ import { parseEnv } from './src/server/env'
 
 // validate env vars before starting
 config({ quiet: true })
-const e = parseEnv(process.env)
+// const e = parseEnv(process.env)
 
 export default defineConfig(() => {
   return {
     server: {
-      port: e.PORT,
+      port: 3000,
     },
     build: {
       // minify: false,
