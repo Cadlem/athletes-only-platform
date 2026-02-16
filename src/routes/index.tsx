@@ -19,7 +19,7 @@ export function LandingPage() {
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link to="/" className="text-2xl font-bold text-amber-400">
+            <Link to="/" className="text-3xl font-bold text-amber-400 font-script">
               Athletes Only
             </Link>
             <nav className="hidden md:flex items-center gap-6">
@@ -228,7 +228,7 @@ export function LandingPage() {
       <footer className="border-t border-gray-800 py-12 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-amber-400 font-bold text-xl">Athletes Only</div>
+            <div className="text-amber-400 font-bold text-xl font-script">Athletes Only</div>
             <p className="text-gray-500 text-sm">
               © 2024 Athletes Only. All rights reserved.
             </p>

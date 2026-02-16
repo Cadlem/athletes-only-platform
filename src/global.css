@@ -58,6 +58,11 @@
   }
 }
 
+/* Script font for logo */
+.font-script {
+  font-family: 'Dancing Script', cursive;
+}
+
 .root-nav {
   @apply flex gap-5 border-b p-5;
 }
