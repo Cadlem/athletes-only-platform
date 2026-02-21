@@ -6,12 +6,12 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm@9
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy all package files for workspace
+COPY package.json apps/*/package.json ./
 COPY apps/api/package.json ./apps/api/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (without frozen lockfile for initial install)
+RUN pnpm install --no-frozen-lockfile
 
 # Build the app
 RUN pnpm --filter @athletes-only/api build
