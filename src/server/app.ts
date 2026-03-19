@@ -12,6 +12,8 @@ import { appRouter, TRPCContext } from './trpc'
 import { AppBindings } from './types'
 import adminRoster from './routes/admin-roster'
 import adminScraper from './routes/admin-scraper'
+import claim from './routes/claim'
+import preSubscription from './routes/pre-subscription'
 import unclaimed from './routes/unclaimed'
 
 export const emojiIcon = import.meta.env.DEV ? '💧' : '🔥'
@@ -30,6 +32,8 @@ if (import.meta.env.DEV) {
 app.route('/', unclaimed)
 app.route('/', adminRoster)
 app.route('/', adminScraper)
+app.route('/', preSubscription)
+app.route('/', claim)
 
 app.on(['POST', 'GET'], '/api/auth/*', c => {
   const auth = c.get('auth')

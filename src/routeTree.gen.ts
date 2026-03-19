@@ -17,13 +17,13 @@ import { Route as RostersImport } from './routes/rosters'
 import { Route as RedirectImport } from './routes/redirect'
 import { Route as LiveFeedImport } from './routes/live-feed'
 import { Route as LazyComponentImport } from './routes/lazy-component'
+import { Route as DiscoverUnclaimedImport } from './routes/discover-unclaimed'
 import { Route as DealsImport } from './routes/deals'
 import { Route as DashboardImport } from './routes/dashboard'
-import { Route as DiscoverUnclaimedImport } from './routes/discover-unclaimed'
-import { Route as UnclaimedProfileIdImport } from './routes/unclaimed-profile.$id'
 import { Route as AdminImport } from './routes/admin'
 import { Route as IndexImport } from './routes/index'
 import { Route as AdminIndexImport } from './routes/admin.index'
+import { Route as UnclaimedProfileIdImport } from './routes/unclaimed-profile.$id'
 import { Route as AdminMembersImport } from './routes/admin.members'
 import { Route as AdminMembersIndexImport } from './routes/admin.members.index'
 import { Route as AdminMembersMemberIdImport } from './routes/admin.members.$memberId'
@@ -66,6 +66,12 @@ const LazyComponentRoute = LazyComponentImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DiscoverUnclaimedRoute = DiscoverUnclaimedImport.update({
+  id: '/discover-unclaimed',
+  path: '/discover-unclaimed',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DealsRoute = DealsImport.update({
   id: '/deals',
   path: '/deals',
@@ -75,18 +81,6 @@ const DealsRoute = DealsImport.update({
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const DiscoverUnclaimedRoute = DiscoverUnclaimedImport.update({
-  id: '/discover-unclaimed',
-  path: '/discover-unclaimed',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const UnclaimedProfileIdRoute = UnclaimedProfileIdImport.update({
-  id: '/unclaimed-profile/$id',
-  path: '/unclaimed-profile/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -106,6 +100,12 @@ const AdminIndexRoute = AdminIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+
+const UnclaimedProfileIdRoute = UnclaimedProfileIdImport.update({
+  id: '/unclaimed-profile/$id',
+  path: '/unclaimed-profile/$id',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AdminMembersRoute = AdminMembersImport.update({
@@ -151,25 +151,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardImport
       parentRoute: typeof rootRoute
     }
-    '/discover-unclaimed': {
-      id: '/discover-unclaimed'
-      path: '/discover-unclaimed'
-      fullPath: '/discover-unclaimed'
-      preLoaderRoute: typeof DiscoverUnclaimedImport
-      parentRoute: typeof rootRoute
-    }
-    '/unclaimed-profile/$id': {
-      id: '/unclaimed-profile/$id'
-      path: '/unclaimed-profile/$id'
-      fullPath: '/unclaimed-profile/$id'
-      preLoaderRoute: typeof UnclaimedProfileIdImport
-      parentRoute: typeof rootRoute
-    }
     '/deals': {
       id: '/deals'
       path: '/deals'
       fullPath: '/deals'
       preLoaderRoute: typeof DealsImport
+      parentRoute: typeof rootRoute
+    }
+    '/discover-unclaimed': {
+      id: '/discover-unclaimed'
+      path: '/discover-unclaimed'
+      fullPath: '/discover-unclaimed'
+      preLoaderRoute: typeof DiscoverUnclaimedImport
       parentRoute: typeof rootRoute
     }
     '/lazy-component': {
@@ -220,6 +213,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/members'
       preLoaderRoute: typeof AdminMembersImport
       parentRoute: typeof AdminImport
+    }
+    '/unclaimed-profile/$id': {
+      id: '/unclaimed-profile/$id'
+      path: '/unclaimed-profile/$id'
+      fullPath: '/unclaimed-profile/$id'
+      preLoaderRoute: typeof UnclaimedProfileIdImport
+      parentRoute: typeof rootRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -277,9 +277,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
-  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
@@ -287,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/admin/members': typeof AdminMembersRouteWithChildren
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
   '/admin/members/': typeof AdminMembersIndexRoute
@@ -295,15 +295,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
-  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
-  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
   '/rosters': typeof RostersRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/admin': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
   '/admin/members': typeof AdminMembersIndexRoute
@@ -314,9 +314,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
-  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
-  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
   '/redirect': typeof RedirectRoute
@@ -324,6 +323,7 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/admin/members': typeof AdminMembersRouteWithChildren
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/members/$memberId': typeof AdminMembersMemberIdRoute
   '/admin/members/': typeof AdminMembersIndexRoute
@@ -335,9 +335,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/discover-unclaimed'
-    | '/unclaimed-profile/$id'
     | '/deals'
+    | '/discover-unclaimed'
     | '/lazy-component'
     | '/live-feed'
     | '/redirect'
@@ -345,6 +344,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/admin/members'
+    | '/unclaimed-profile/$id'
     | '/admin/'
     | '/admin/members/$memberId'
     | '/admin/members/'
@@ -352,15 +352,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
-    | '/discover-unclaimed'
-    | '/unclaimed-profile/$id'
     | '/deals'
+    | '/discover-unclaimed'
     | '/lazy-component'
     | '/live-feed'
     | '/redirect'
     | '/rosters'
     | '/signin'
     | '/signup'
+    | '/unclaimed-profile/$id'
     | '/admin'
     | '/admin/members/$memberId'
     | '/admin/members'
@@ -369,9 +369,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
-    | '/discover-unclaimed'
-    | '/unclaimed-profile/$id'
     | '/deals'
+    | '/discover-unclaimed'
     | '/lazy-component'
     | '/live-feed'
     | '/redirect'
@@ -379,6 +378,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/admin/members'
+    | '/unclaimed-profile/$id'
     | '/admin/'
     | '/admin/members/$memberId'
     | '/admin/members/'
@@ -389,30 +389,30 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
-  DiscoverUnclaimedRoute: typeof DiscoverUnclaimedRoute
-  UnclaimedProfileIdRoute: typeof UnclaimedProfileIdRoute
   DealsRoute: typeof DealsRoute
+  DiscoverUnclaimedRoute: typeof DiscoverUnclaimedRoute
   LazyComponentRoute: typeof LazyComponentRoute
   LiveFeedRoute: typeof LiveFeedRoute
   RedirectRoute: typeof RedirectRoute
   RostersRoute: typeof RostersRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  UnclaimedProfileIdRoute: typeof UnclaimedProfileIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRoute,
-  DiscoverUnclaimedRoute: DiscoverUnclaimedRoute,
-  UnclaimedProfileIdRoute: UnclaimedProfileIdRoute,
   DealsRoute: DealsRoute,
+  DiscoverUnclaimedRoute: DiscoverUnclaimedRoute,
   LazyComponentRoute: LazyComponentRoute,
   LiveFeedRoute: LiveFeedRoute,
   RedirectRoute: RedirectRoute,
   RostersRoute: RostersRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  UnclaimedProfileIdRoute: UnclaimedProfileIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -428,15 +428,15 @@ export const routeTree = rootRoute
         "/",
         "/admin",
         "/dashboard",
-        "/discover-unclaimed",
-        "/unclaimed-profile/$id",
         "/deals",
+        "/discover-unclaimed",
         "/lazy-component",
         "/live-feed",
         "/redirect",
         "/rosters",
         "/signin",
-        "/signup"
+        "/signup",
+        "/unclaimed-profile/$id"
       ]
     },
     "/": {
@@ -452,14 +452,11 @@ export const routeTree = rootRoute
     "/dashboard": {
       "filePath": "dashboard.tsx"
     },
-    "/discover-unclaimed": {
-      "filePath": "discover-unclaimed.tsx"
-    },
-    "/unclaimed-profile/$id": {
-      "filePath": "unclaimed-profile.$id.tsx"
-    },
     "/deals": {
       "filePath": "deals.tsx"
+    },
+    "/discover-unclaimed": {
+      "filePath": "discover-unclaimed.tsx"
     },
     "/lazy-component": {
       "filePath": "lazy-component.tsx"
@@ -486,6 +483,9 @@ export const routeTree = rootRoute
         "/admin/members/$memberId",
         "/admin/members/"
       ]
+    },
+    "/unclaimed-profile/$id": {
+      "filePath": "unclaimed-profile.$id.tsx"
     },
     "/admin/": {
       "filePath": "admin.index.tsx",

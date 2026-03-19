@@ -116,6 +116,12 @@ export const SPORTS: SportConfig[] = [
     slugs: ['womens-gymnastics', 'women-s-gymnastics', 'wgymnastics', 'gymnastics'],
   },
 
+  // ─── Cheer / Spirit ───────────────────────────────────────────────────────────
+  {
+    name: 'Cheer/Spirit',
+    slugs: ['cheerleading', 'spirit', 'cheer'],
+  },
+
   // ─── Lacrosse ─────────────────────────────────────────────────────────────────
   {
     name: "Men's Lacrosse",

@@ -1,9 +1,9 @@
-import { config } from '@dotenvx/dotenvx'
+import 'dotenv/config'
 import devServer from '@hono/vite-dev-server'
 import adapter from '@hono/vite-dev-server/node'
 import tanStackRouterVite from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { createHtmlPlugin } from 'vite-plugin-html'
 import { sri } from 'vite-plugin-sri3'
 import tsconfigPaths from 'vite-tsconfig-paths'
@@ -11,7 +11,7 @@ import tsupBuild from './src/lib/vite/plugins/tsup'
 import { parseEnv } from './src/server/env'
 
 // validate env vars before starting
-config({ quiet: true })
+const env = loadEnv('development', process.cwd(), '')
 // const e = parseEnv(process.env)
 
 export default defineConfig(() => {
@@ -46,15 +46,7 @@ export default defineConfig(() => {
         entry: 'src/server/app.ts',
         adapter,
         env() {
-          const result = config({
-            quiet: true,
-            override: true,
-            // debug: true,
-          })
-          if (result.error) {
-            throw result.error
-          }
-          return result.parsed!
+          return process.env as Record<string, string>
         },
         exclude: [
           /^(?!\/(favicon|api|trpc)).*/, // exclude all routes that are not /api or /trpc or favicon

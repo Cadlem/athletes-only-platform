@@ -439,4 +439,13 @@ CREATE INDEX "social_posts_athlete_idx" ON "social_posts" USING btree ("athlete_
 CREATE INDEX "social_posts_connection_idx" ON "social_posts" USING btree ("connection_id" uuid_ops);--> statement-breakpoint
 CREATE INDEX "social_posts_scheduled_idx" ON "social_posts" USING btree ("scheduled_for" timestamp_ops);--> statement-breakpoint
 CREATE INDEX "social_posts_status_idx" ON "social_posts" USING btree ("status" text_ops);
+--> statement-breakpoint
+CREATE TYPE "public"."nil_model_type" AS ENUM('unified', 'dual', 'prohibited');--> statement-breakpoint
+CREATE TABLE "state_nil_rules" (
+	"state" varchar(2) PRIMARY KEY NOT NULL,
+	"model_type" "nil_model_type" NOT NULL,
+	"min_age" integer NOT NULL,
+	"restrictions" text,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
 */

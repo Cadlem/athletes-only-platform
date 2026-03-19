@@ -1,5 +1,6 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { LoadingPage } from '~/components/ui/loading'
 
 export const Route = createFileRoute('/unclaimed-profile/$id')({
@@ -42,21 +43,33 @@ const sportIcons: Record<string, string> = {
   'Cross Country': '🏃',
 }
 
+type TierKey = 'bronze' | 'silver' | 'gold'
+
+const tierColors: Record<TierKey, string> = {
+  bronze: 'border-amber-700/50 bg-amber-900/10 hover:bg-amber-900/20 text-amber-300',
+  silver: 'border-gray-500/50 bg-gray-800/50 hover:bg-gray-700/50 text-gray-200',
+  gold: 'border-yellow-500/50 bg-yellow-900/10 hover:bg-yellow-900/20 text-yellow-300',
+}
+
 function TierButton({
   tier,
   priceCents,
   color,
+  onClick,
+  disabled,
 }: {
   tier: string
   priceCents: number
   color: string
+  onClick: () => void
+  disabled?: boolean
 }) {
   const price = (priceCents / 100).toFixed(2)
   return (
     <button
-      disabled
-      title="Pre-subscribe — coming soon when athlete joins"
-      className={`w-full rounded-xl border-2 p-5 text-left opacity-75 cursor-not-allowed transition-colors ${color}`}
+      disabled={disabled}
+      onClick={onClick}
+      className={`w-full rounded-xl border-2 p-5 text-left transition-colors ${color} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className="flex items-center justify-between mb-1">
         <span className="font-bold text-lg capitalize">{tier}</span>
@@ -76,8 +89,70 @@ function ProfileField({ label, value }: { label: string; value: string | null | 
   )
 }
 
+function ConfirmationModal({
+  tier,
+  priceCents,
+  athleteName,
+  onConfirm,
+  onCancel,
+  isLoading,
+}: {
+  tier: TierKey
+  priceCents: number
+  athleteName: string
+  onConfirm: () => void
+  onCancel: () => void
+  isLoading: boolean
+}) {
+  const price = (priceCents / 100).toFixed(2)
+  const color = tierColors[tier]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+        <h3 className="text-xl font-bold mb-2">Confirm Pre-Subscription</h3>
+        <p className="text-gray-400 text-sm mb-6">
+          Lock in your <span className={`font-bold capitalize ${tier === 'gold' ? 'text-yellow-300' : tier === 'silver' ? 'text-gray-200' : 'text-amber-300'}`}>{tier}</span> spot for <span className="text-white font-semibold">{athleteName}</span>. You'll be charged automatically when they claim their profile.
+        </p>
+
+        <div className={`rounded-xl border-2 p-4 mb-6 ${color}`}>
+          <div className="flex items-center justify-between">
+            <span className="font-bold capitalize text-lg">{tier}</span>
+            <span className="text-2xl font-bold">${price}<span className="text-sm font-normal text-current opacity-70">/mo</span></span>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-500 mb-6">
+          No charge today — this is a pre-commitment. You'll be billed when {athleteName} officially joins Athletes Only.
+        </p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-600 text-gray-300 font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:opacity-50"
+          >
+            {isLoading ? 'Processing...' : `Lock In ${tier.charAt(0).toUpperCase() + tier.slice(1)}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function UnclaimedProfilePage() {
   const { id } = Route.useParams()
+  const queryClient = useQueryClient()
+  const [selectedTier, setSelectedTier] = useState<TierKey | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['unclaimed-athlete', id],
@@ -88,8 +163,33 @@ export function UnclaimedProfilePage() {
     },
   })
 
-  const athlete = data?.athlete
+  const subscribeMutation = useMutation({
+    mutationFn: async (tier: TierKey) => {
+      const res = await fetch(`/api/v1/athletes/unclaimed/${id}/pre-subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: 'Unknown error' }))
+        throw new Error(body.error ?? `HTTP ${res.status}`)
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      setShowSuccess(true)
+      setSelectedTier(null)
+      // Refresh both the individual profile and the list view
+      queryClient.invalidateQueries({ queryKey: ['unclaimed-athlete', id] })
+      queryClient.invalidateQueries({ queryKey: ['unclaimed-athletes'] })
+    },
+    onError: (err: Error) => {
+      setErrorMessage(err.message)
+      setSelectedTier(null)
+    },
+  })
 
+  const athlete = data?.athlete
   const tierPricing = athlete?.tierPricing ?? { bronze: 499, silver: 999, gold: 2499 }
 
   if (isLoading) return <LoadingPage />
@@ -116,8 +216,45 @@ export function UnclaimedProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {/* Confirmation Modal */}
+      {selectedTier && (
+        <ConfirmationModal
+          tier={selectedTier}
+          priceCents={tierPricing[selectedTier]}
+          athleteName={athlete.displayName}
+          onConfirm={() => subscribeMutation.mutate(selectedTier)}
+          onCancel={() => {
+            setSelectedTier(null)
+            setErrorMessage(null)
+          }}
+          isLoading={subscribeMutation.isPending}
+        />
+      )}
+
+      {/* Success State */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-amber-500/30 rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
+            <div className="text-6xl mb-4">🔥</div>
+            <h2 className="text-2xl font-bold text-amber-400 mb-2">You're in!</h2>
+            <p className="text-gray-300 text-sm mb-2">
+              You've pre-subscribed to <span className="text-white font-semibold">{athlete.displayName}</span>.
+            </p>
+            <p className="text-gray-500 text-xs mb-8">
+              You'll be charged when they claim their profile. We'll notify you at that time.
+            </p>
+            <button
+              onClick={() => setShowSuccess(false)}
+              className="w-full px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link to="/" className="text-2xl font-bold text-amber-400">
@@ -146,7 +283,6 @@ export function UnclaimedProfilePage() {
         <div className="h-40 bg-gradient-to-r from-gray-800 to-gray-900" />
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-end gap-6 -mt-12 pb-6">
-            {/* Avatar */}
             {athlete.avatarUrl ? (
               <img
                 src={athlete.avatarUrl}
@@ -158,7 +294,6 @@ export function UnclaimedProfilePage() {
                 {initial}
               </div>
             )}
-            {/* Name + badge */}
             <div className="pb-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-3xl font-bold">{athlete.displayName}</h1>
@@ -220,32 +355,64 @@ export function UnclaimedProfilePage() {
               </p>
             </div>
 
+            {/* Claim this profile */}
+            <div className="bg-gray-900 rounded-xl border border-amber-500/30 p-5">
+              <h2 className="text-lg font-semibold mb-1">Are you {athlete.displayName}?</h2>
+              <p className="text-gray-400 text-sm mb-4">
+                Claim this athlete profile and start sharing content with fans.
+              </p>
+              <Link
+                to="/claim/$id"
+                params={{ id: athlete.id }}
+                className="block w-full text-center px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors"
+              >
+                Claim This Profile
+              </Link>
+            </div>
+
             {/* Pre-subscribe */}
             <div className="bg-gray-900 rounded-xl border border-gray-800 p-5">
               <h2 className="text-lg font-semibold mb-1">Pre-Subscribe</h2>
               <p className="text-gray-400 text-sm mb-4">
                 Lock in your spot. You'll be charged only when {athlete.displayName} claims their profile.
               </p>
+
+              {/* Error message */}
+              {errorMessage && (
+                <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-700/50 text-red-300 text-sm">
+                  {errorMessage}
+                </div>
+              )}
+
               <div className="space-y-3">
                 <TierButton
                   tier="Bronze"
                   priceCents={tierPricing.bronze}
-                  color="border-amber-700/50 bg-amber-900/10 hover:bg-amber-900/20 text-amber-300"
+                  color={tierColors.bronze}
+                  onClick={() => {
+                    setErrorMessage(null)
+                    setSelectedTier('bronze')
+                  }}
                 />
                 <TierButton
                   tier="Silver"
                   priceCents={tierPricing.silver}
-                  color="border-gray-500/50 bg-gray-800/50 hover:bg-gray-700/50 text-gray-200"
+                  color={tierColors.silver}
+                  onClick={() => {
+                    setErrorMessage(null)
+                    setSelectedTier('silver')
+                  }}
                 />
                 <TierButton
                   tier="Gold"
                   priceCents={tierPricing.gold}
-                  color="border-yellow-500/50 bg-yellow-900/10 hover:bg-yellow-900/20 text-yellow-300"
+                  color={tierColors.gold}
+                  onClick={() => {
+                    setErrorMessage(null)
+                    setSelectedTier('gold')
+                  }}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-3 text-center">
-                Pre-subscribe functionality coming soon
-              </p>
             </div>
 
             {/* Back link */}

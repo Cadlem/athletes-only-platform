@@ -1,30 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSession } from '~/lib/better-auth/auth-client'
-import { signOut } from '~/lib/better-auth/auth-client'
 
 export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
 })
 
 export function DashboardPage() {
-  const session = useSession()
-
-  if (!session.data) {
-    return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please sign in to view your dashboard</h1>
-          <Link
-            to="/signin"
-            className="text-amber-400 hover:text-amber-300"
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Header */}
@@ -51,14 +31,14 @@ export function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-400">
-              {session.data.user.name || session.data.user.email}
+              Fan User
             </span>
-            <button
-              onClick={() => signOut()}
+            <Link
+              to="/signin"
               className="text-sm text-gray-300 hover:text-white transition-colors"
             >
-              Sign Out
-            </button>
+              Sign In
+            </Link>
           </div>
         </div>
       </header>
@@ -71,13 +51,13 @@ export function DashboardPage() {
           <h2 className="text-xl font-semibold mb-4">Profile</h2>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900">
-              {session.data.user.name?.charAt(0) || session.data.user.email?.charAt(0) || 'U'}
+              F
             </div>
             <div>
               <div className="font-semibold text-lg">
-                {session.data.user.name || 'User'}
+                Fan User
               </div>
-              <div className="text-gray-400">{session.data.user.email}</div>
+              <div className="text-gray-400">fan@example.com</div>
             </div>
           </div>
         </div>

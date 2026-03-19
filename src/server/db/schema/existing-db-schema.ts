@@ -3,13 +3,14 @@ import { sql } from "drizzle-orm"
 
 export const badgeTier = pgEnum("badge_tier", ['bronze', 'silver', 'gold', 'platinum'])
 export const scrapeRunStatus = pgEnum("scrape_run_status", ['pending', 'running', 'completed', 'failed'])
+export const nilModelType = pgEnum("nil_model_type", ['unified', 'dual', 'prohibited'])
 export const boostStatus = pgEnum("boost_status", ['pending_payment', 'paid', 'in_progress', 'under_review', 'approved', 'rejected', 'completed', 'refunded'])
 export const boostType = pgEnum("boost_type", ['video_shoutout', 'custom_photo', 'personal_message'])
 export const contentType = pgEnum("content_type", ['photo', 'video', 'text'])
 export const giftType = pgEnum("gift_type", ['balloon', 'lightning', 'trophy', 'diamond', 'fire', 'crown', 'rocket'])
 export const liveSessionStatus = pgEnum("live_session_status", ['scheduled', 'live', 'ended'])
 export const moderationAction = pgEnum("moderation_action", ['dismiss', 'warn', 'mute_24h', 'mute_7d', 'ban', 'delete_content'])
-export const notificationType = pgEnum("notification_type", ['new_subscriber', 'new_gift', 'boost_request', 'boost_approved', 'boost_rejected', 'athlete_live', 'badge_unlocked', 'payout_completed'])
+export const notificationType = pgEnum("notification_type", ['new_subscriber', 'new_gift', 'boost_request', 'boost_approved', 'boost_rejected', 'athlete_live', 'badge_unlocked', 'payout_completed', 'athlete_claimed'])
 export const payoutStatus = pgEnum("payout_status", ['pending', 'processing', 'completed', 'failed'])
 export const reportReason = pgEnum("report_reason", ['inappropriate', 'spam', 'harassment', 'copyright', 'other'])
 export const reportStatus = pgEnum("report_status", ['pending', 'reviewing', 'resolved', 'dismissed'])
@@ -675,6 +676,7 @@ export const athleteRepresentatives = pgTable("athlete_representatives", {
 	splitPercentage: integer("split_percentage").notNull(),
 	status: varchar({ length: 20 }).default('active').notNull(),
 	stripeAccountId: varchar("stripe_account_id", { length: 255 }),
+	totalEarningsCents: integer("total_earnings_cents").default(0).notNull(),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	index("athlete_representatives_athlete_idx").using("btree", table.athleteId.asc().nullsLast().op("uuid_ops")),
@@ -706,3 +708,11 @@ export const scrapeRuns = pgTable("scrape_runs", {
 			name: "scrape_runs_school_id_schools_id_fk"
 		}).onDelete("set null"),
 ]);
+
+export const stateNilRules = pgTable("state_nil_rules", {
+	state: varchar({ length: 2 }).primaryKey().notNull(),
+	modelType: nilModelType("model_type").notNull(),
+	minAge: integer("min_age").notNull(),
+	restrictions: text(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).defaultNow().notNull(),
+});

@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { scrapeRuns, schools } from '~/server/db/schema/existing-db-schema'
 import { AppBindings, AppDb } from '~/server/types'
-import { findSchool, NCAA_SCHOOLS } from '../scraper/ncaa-schools'
+import { findSchool, findSchoolByDbName, NCAA_SCHOOLS } from '../scraper/ncaa-schools'
 import { findSport, SPORTS } from '../scraper/sports-config'
 import { scrapeSchool } from '../scraper/scrape-school'
 
@@ -200,6 +200,123 @@ adminScraper.get('/api/v1/admin/scraper/runs/:id', async (c) => {
   }
 
   return c.json({ ...run, schoolName })
+})
+
+// ─── POST /api/v1/admin/scraper/expanded ─────────────────────────────────────
+
+interface ExpandedBodySingle {
+  schoolId: string
+  sport: string
+}
+interface ExpandedBodyMulti {
+  sports: string[]
+  schoolId?: string
+}
+
+adminScraper.post('/api/v1/admin/scraper/expanded', async (c) => {
+  const db = c.var.db
+  let body: ExpandedBodySingle | ExpandedBodyMulti
+
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: 'Invalid JSON body' }, 400)
+  }
+
+  // ── Resolve target schools ────────────────────────────────────────────────
+  let targetSchools: typeof NCAA_SCHOOLS = []
+
+  if ('schoolId' in body && body.schoolId) {
+    // Single school: look up by DB UUID
+    const [schoolRecord] = await db
+      .select({ id: schools.id, name: schools.name })
+      .from(schools)
+      .where(eq(schools.id, body.schoolId))
+
+    if (!schoolRecord) {
+      return c.json({ error: `School not found in DB: "${body.schoolId}"` }, 404)
+    }
+
+    const ncaaSchool = findSchoolByDbName(schoolRecord.name)
+    if (!ncaaSchool) {
+      return c.json({
+        error: `School "${schoolRecord.name}" is not in the NCAA scraper catalog.`,
+        availableSchools: NCAA_SCHOOLS.map(s => s.name),
+      }, 400)
+    }
+    targetSchools = [ncaaSchool]
+  } else {
+    // All schools
+    targetSchools = NCAA_SCHOOLS
+  }
+
+  // ── Resolve target sports ─────────────────────────────────────────────────
+  let targetSports: ReturnType<typeof findSport>[] = []
+
+  if ('sport' in body && body.sport) {
+    // Single sport
+    const s = findSport(body.sport)
+    if (!s) {
+      return c.json({
+        error: `Sport not found: "${body.sport}". Use the canonical name.`,
+        availableSports: SPORTS.map(s => s.name),
+      }, 400)
+    }
+    targetSports = [s]
+  } else if ('sports' in body && Array.isArray(body.sports)) {
+    if (body.sports.length === 0) {
+      return c.json({ error: 'sports array cannot be empty' }, 400)
+    }
+    const resolved: ReturnType<typeof findSport>[] = []
+    const notFound: string[] = []
+    for (const sportName of body.sports) {
+      const s = findSport(sportName)
+      if (s) resolved.push(s)
+      else notFound.push(sportName)
+    }
+    if (notFound.length > 0) {
+      return c.json({
+        error: `Unknown sport(s): ${notFound.join(', ')}`,
+        availableSports: SPORTS.map(s => s.name),
+      }, 400)
+    }
+    targetSports = resolved
+  } else {
+    return c.json({
+      error: 'Body must contain either { schoolId, sport } or { sports: string[] }',
+    }, 400)
+  }
+
+  // ── Create the top-level scrape run ───────────────────────────────────────
+  const [run] = await db
+    .insert(scrapeRuns)
+    .values({
+      schoolId: 'schoolId' in body && body.schoolId ? body.schoolId : null,
+      sport: targetSports.length === 1 ? targetSports[0].name : null,
+      status: 'running',
+      startedAt: new Date().toISOString(),
+    })
+    .returning({ id: scrapeRuns.id })
+
+  const runId = run.id
+
+  // Fire and forget
+  runScrapeInBackground(
+    db,
+    runId,
+    targetSchools.length === 1 ? targetSchools[0].shortName : undefined,
+    targetSports.length === 1 ? targetSports[0].name : undefined,
+  ).catch(err => {
+    console.error(`[scraper] Expanded run ${runId} threw unexpectedly:`, err)
+  })
+
+  return c.json({
+    runId,
+    status: 'running',
+    schools: targetSchools.map(s => ({ name: s.name, shortName: s.shortName })),
+    sports: targetSports.map(s => s.name),
+    message: 'Scrape started. Poll /api/v1/admin/scraper/runs/:id for status.',
+  }, 202)
 })
 
 // ─── GET /api/v1/admin/scraper/schools ───────────────────────────────────────

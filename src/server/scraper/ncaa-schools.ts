@@ -102,3 +102,20 @@ export function findSchool(query: string): NcaaSchool | undefined {
     s => s.shortName.toLowerCase() === q || s.name.toLowerCase().includes(q)
   )
 }
+
+/**
+ * Look up a school by its database name (schools.name).
+ * Returns the matching NcaaSchool, or undefined.
+ */
+export function findSchoolByDbName(dbName: string): NcaaSchool | undefined {
+  const n = dbName.toLowerCase()
+  return NCAA_SCHOOLS.find(s => s.name.toLowerCase() === n)
+}
+
+/**
+ * Look up a school by its domain.
+ */
+export function findSchoolByDomain(domain: string): NcaaSchool | undefined {
+  const d = domain.toLowerCase()
+  return NCAA_SCHOOLS.find(s => s.domain.toLowerCase() === d)
+}
