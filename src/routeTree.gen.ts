@@ -19,6 +19,8 @@ import { Route as LiveFeedImport } from './routes/live-feed'
 import { Route as LazyComponentImport } from './routes/lazy-component'
 import { Route as DealsImport } from './routes/deals'
 import { Route as DashboardImport } from './routes/dashboard'
+import { Route as DiscoverUnclaimedImport } from './routes/discover-unclaimed'
+import { Route as UnclaimedProfileIdImport } from './routes/unclaimed-profile.$id'
 import { Route as AdminImport } from './routes/admin'
 import { Route as IndexImport } from './routes/index'
 import { Route as AdminIndexImport } from './routes/admin.index'
@@ -73,6 +75,18 @@ const DealsRoute = DealsImport.update({
 const DashboardRoute = DashboardImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DiscoverUnclaimedRoute = DiscoverUnclaimedImport.update({
+  id: '/discover-unclaimed',
+  path: '/discover-unclaimed',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const UnclaimedProfileIdRoute = UnclaimedProfileIdImport.update({
+  id: '/unclaimed-profile/$id',
+  path: '/unclaimed-profile/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -135,6 +149,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/discover-unclaimed': {
+      id: '/discover-unclaimed'
+      path: '/discover-unclaimed'
+      fullPath: '/discover-unclaimed'
+      preLoaderRoute: typeof DiscoverUnclaimedImport
+      parentRoute: typeof rootRoute
+    }
+    '/unclaimed-profile/$id': {
+      id: '/unclaimed-profile/$id'
+      path: '/unclaimed-profile/$id'
+      fullPath: '/unclaimed-profile/$id'
+      preLoaderRoute: typeof UnclaimedProfileIdImport
       parentRoute: typeof rootRoute
     }
     '/deals': {
@@ -249,6 +277,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -265,6 +295,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -282,6 +314,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
+  '/discover-unclaimed': typeof DiscoverUnclaimedRoute
+  '/unclaimed-profile/$id': typeof UnclaimedProfileIdRoute
   '/deals': typeof DealsRoute
   '/lazy-component': typeof LazyComponentRoute
   '/live-feed': typeof LiveFeedRoute
@@ -301,6 +335,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/discover-unclaimed'
+    | '/unclaimed-profile/$id'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -316,6 +352,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/discover-unclaimed'
+    | '/unclaimed-profile/$id'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -331,6 +369,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/discover-unclaimed'
+    | '/unclaimed-profile/$id'
     | '/deals'
     | '/lazy-component'
     | '/live-feed'
@@ -349,6 +389,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
+  DiscoverUnclaimedRoute: typeof DiscoverUnclaimedRoute
+  UnclaimedProfileIdRoute: typeof UnclaimedProfileIdRoute
   DealsRoute: typeof DealsRoute
   LazyComponentRoute: typeof LazyComponentRoute
   LiveFeedRoute: typeof LiveFeedRoute
@@ -362,6 +404,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRoute,
+  DiscoverUnclaimedRoute: DiscoverUnclaimedRoute,
+  UnclaimedProfileIdRoute: UnclaimedProfileIdRoute,
   DealsRoute: DealsRoute,
   LazyComponentRoute: LazyComponentRoute,
   LiveFeedRoute: LiveFeedRoute,
@@ -384,6 +428,8 @@ export const routeTree = rootRoute
         "/",
         "/admin",
         "/dashboard",
+        "/discover-unclaimed",
+        "/unclaimed-profile/$id",
         "/deals",
         "/lazy-component",
         "/live-feed",
@@ -405,6 +451,12 @@ export const routeTree = rootRoute
     },
     "/dashboard": {
       "filePath": "dashboard.tsx"
+    },
+    "/discover-unclaimed": {
+      "filePath": "discover-unclaimed.tsx"
+    },
+    "/unclaimed-profile/$id": {
+      "filePath": "unclaimed-profile.$id.tsx"
     },
     "/deals": {
       "filePath": "deals.tsx"
