@@ -17,6 +17,9 @@ export const transactionType = pgEnum("transaction_type", ['deposit', 'subscript
 export const userRole = pgEnum("user_role", ['fan', 'athlete', 'moderator', 'admin'])
 export const userStatus = pgEnum("user_status", ['active', 'suspended', 'pending'])
 export const verificationStatus = pgEnum("verification_status", ['pending', 'verified', 'rejected'])
+export const claimStatus = pgEnum("claim_status", ['unclaimed', 'pending_claim', 'claimed', 'active'])
+export const profileSource = pgEnum("profile_source", ['signup', 'scraped', 'csv_import', 'manual'])
+export const repRelationship = pgEnum("rep_relationship", ['agent', 'manager', 'family', 'attorney', 'other'])
 
 
 export const posts = pgTable("posts", {
@@ -503,6 +506,12 @@ export const athleteProfiles = pgTable("athlete_profiles", {
 	inTransferPortal: boolean("in_transfer_portal").default(false).notNull(),
 	transferPortalDate: timestamp("transfer_portal_date", { mode: 'string' }),
 	previousSchoolId: uuid("previous_school_id"),
+	claimStatus: claimStatus("claim_status").default('unclaimed').notNull(),
+	source: profileSource("source").default('signup').notNull(),
+	claimedBy: uuid("claimed_by"),
+	claimedAt: timestamp("claimed_at", { mode: 'string' }),
+	rosterSourceUrl: text("roster_source_url"),
+	preSubscriberCount: integer("pre_subscriber_count").default(0).notNull(),
 }, (table) => [
 	index("athlete_profiles_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
 	index("athlete_profiles_sport_idx").using("btree", table.sport.asc().nullsLast().op("text_ops")),
@@ -523,6 +532,12 @@ export const athleteProfiles = pgTable("athlete_profiles", {
 			foreignColumns: [schools.id],
 			name: "athlete_profiles_previous_school_id_schools_id_fk"
 		}),
+	foreignKey({
+			columns: [table.claimedBy],
+			foreignColumns: [users.id],
+			name: "athlete_profiles_claimed_by_users_id_fk"
+		}),
+	index("athlete_profiles_claim_status_idx").using("btree", table.claimStatus.asc().nullsLast().op("enum_ops")),
 	unique("athlete_profiles_user_id_unique").on(table.userId),
 ]);
 
@@ -616,5 +631,52 @@ export const socialPosts = pgTable("social_posts", {
 			columns: [table.connectionId],
 			foreignColumns: [socialConnections.id],
 			name: "social_posts_connection_id_social_connections_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const preSubscriptions = pgTable("pre_subscriptions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	fanId: uuid("fan_id").notNull(),
+	athleteProfileId: uuid("athlete_profile_id").notNull(),
+	tier: subscriptionTier().notNull(),
+	monthlyAmountCents: integer("monthly_amount_cents").notNull(),
+	status: varchar({ length: 20 }).default('pending').notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+	activatedAt: timestamp("activated_at", { mode: 'string' }),
+	expiresAt: timestamp("expires_at", { mode: 'string' }),
+}, (table) => [
+	index("pre_subscriptions_fan_idx").using("btree", table.fanId.asc().nullsLast().op("uuid_ops")),
+	index("pre_subscriptions_athlete_idx").using("btree", table.athleteProfileId.asc().nullsLast().op("uuid_ops")),
+	index("pre_subscriptions_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.fanId],
+			foreignColumns: [fanProfiles.id],
+			name: "pre_subscriptions_fan_id_fan_profiles_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.athleteProfileId],
+			foreignColumns: [athleteProfiles.id],
+			name: "pre_subscriptions_athlete_profile_id_athlete_profiles_id_fk"
+		}).onDelete("cascade"),
+]);
+
+export const athleteRepresentatives = pgTable("athlete_representatives", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	athleteId: uuid("athlete_id").notNull(),
+	repName: varchar("rep_name", { length: 255 }).notNull(),
+	repEmail: varchar("rep_email", { length: 255 }).notNull(),
+	repPhone: varchar("rep_phone", { length: 50 }),
+	relationship: repRelationship().notNull(),
+	splitPercentage: integer("split_percentage").notNull(),
+	status: varchar({ length: 20 }).default('active').notNull(),
+	stripeAccountId: varchar("stripe_account_id", { length: 255 }),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("athlete_representatives_athlete_idx").using("btree", table.athleteId.asc().nullsLast().op("uuid_ops")),
+	index("athlete_representatives_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.athleteId],
+			foreignColumns: [athleteProfiles.id],
+			name: "athlete_representatives_athlete_id_athlete_profiles_id_fk"
 		}).onDelete("cascade"),
 ]);
