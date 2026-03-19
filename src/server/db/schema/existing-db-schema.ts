@@ -2,6 +2,7 @@ import { pgTable, index, foreignKey, uuid, text, boolean, timestamp, unique, var
 import { sql } from "drizzle-orm"
 
 export const badgeTier = pgEnum("badge_tier", ['bronze', 'silver', 'gold', 'platinum'])
+export const scrapeRunStatus = pgEnum("scrape_run_status", ['pending', 'running', 'completed', 'failed'])
 export const boostStatus = pgEnum("boost_status", ['pending_payment', 'paid', 'in_progress', 'under_review', 'approved', 'rejected', 'completed', 'refunded'])
 export const boostType = pgEnum("boost_type", ['video_shoutout', 'custom_photo', 'personal_message'])
 export const contentType = pgEnum("content_type", ['photo', 'video', 'text'])
@@ -683,4 +684,25 @@ export const athleteRepresentatives = pgTable("athlete_representatives", {
 			foreignColumns: [athleteProfiles.id],
 			name: "athlete_representatives_athlete_id_athlete_profiles_id_fk"
 		}).onDelete("cascade"),
+]);
+
+export const scrapeRuns = pgTable("scrape_runs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	schoolId: uuid("school_id"),
+	sport: varchar({ length: 100 }),
+	status: scrapeRunStatus().default('pending').notNull(),
+	athletesFound: integer("athletes_found").default(0).notNull(),
+	athletesCreated: integer("athletes_created").default(0).notNull(),
+	athletesSkipped: integer("athletes_skipped").default(0).notNull(),
+	errors: jsonb().default([]).notNull(),
+	startedAt: timestamp("started_at", { mode: 'string' }),
+	completedAt: timestamp("completed_at", { mode: 'string' }),
+}, (table) => [
+	index("scrape_runs_school_idx").using("btree", table.schoolId.asc().nullsLast().op("uuid_ops")),
+	index("scrape_runs_status_idx").using("btree", table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.schoolId],
+			foreignColumns: [schools.id],
+			name: "scrape_runs_school_id_schools_id_fk"
+		}).onDelete("set null"),
 ]);

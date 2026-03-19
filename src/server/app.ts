@@ -11,6 +11,7 @@ import serveEmojiFavicon from './middleware/serve-emoji-favicon'
 import { appRouter, TRPCContext } from './trpc'
 import { AppBindings } from './types'
 import adminRoster from './routes/admin-roster'
+import adminScraper from './routes/admin-scraper'
 import unclaimed from './routes/unclaimed'
 
 export const emojiIcon = import.meta.env.DEV ? '💧' : '🔥'
@@ -28,6 +29,7 @@ if (import.meta.env.DEV) {
 
 app.route('/', unclaimed)
 app.route('/', adminRoster)
+app.route('/', adminScraper)
 
 app.on(['POST', 'GET'], '/api/auth/*', c => {
   const auth = c.get('auth')
